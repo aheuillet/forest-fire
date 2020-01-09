@@ -5,8 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 __cellSize__ = 40
-__gridDim__ = (35, 35) 
-__screenSize__ = (int(__gridDim__[0]*61.5),int(__gridDim__[1]*60.9))
 
 __firecolor__ = (255, 0, 0)
 __treecolor__ = (0, 255, 0)
@@ -21,10 +19,10 @@ def getColorCell(n):
         return __burntcolor__
 
 class Forest:
-    def __init__(self, fire_number, p=0.5):
-        print("Creating a grid of dimensions " + str(__gridDim__))
-        self.grid = np.zeros(__gridDim__)
-        self.size = __gridDim__[0]
+    def __init__(self, fire_number, size, p=0.5):
+        print(f"Creating a grid of dimensions ({size},{size})")
+        self.grid = np.zeros((size, size))
+        self.size = size
         self.p = p
         for i in range(fire_number):
             a = np.random.randint(0, self.size-1)
@@ -66,22 +64,26 @@ class Forest:
                 if self.grid[i, j] == 0:
                     nb_tree += 1
         return nb_tree
+    
+    def get_stats(self):
+        pass
 
 class Scene:
     _grid = None
     _font = None
 
-    def __init__(self, perco, render=True):
+    def __init__(self, perco, nb_fires, size, render=True):
+        self._grid = Forest(nb_fires, size, perco)
+        self._screen_size = (int(self._grid.size*61.5),int(self._grid.size*60.9))
         if render:
             pygame.init()
-            self._screen = pygame.display.set_mode(__screenSize__)
+            self._screen = pygame.display.set_mode(self._screen_size)
             self._font = pygame.font.SysFont('Arial',25)
-        self._grid = Forest(1, perco)
 
     def drawMe(self):
         self._screen.fill((128,128,128))
-        for x in range(__gridDim__[0]):
-            for y in range(__gridDim__[1]):
+        for x in range(self._grid.size):
+            for y in range(self._grid.size):
                 pygame.draw.rect(self._screen, 
                         getColorCell(self._grid.grid.item((x,y))),
                         (x*__cellSize__ + 1, y*__cellSize__ + 1, __cellSize__-2, __cellSize__-2))
@@ -99,8 +101,8 @@ def plot_result(results):
     plt.ylabel("Coefficient de percolation")
     plt.show()
 
-def fast_simulation(epochs=1):
-    results = {"perco_coeff": [], "tree_left": []}
+def fast_simulation(epochs=1, nb_fires=1, size=25):
+    results = {"perco_coeff": [], "tree_left": [], "time_to_complete": []}
     pmax = 1
     delta = 0.05
     for e in range(epochs):
@@ -108,7 +110,7 @@ def fast_simulation(epochs=1):
         results["tree_left"].append([])
         p = 0
         while p < pmax:
-            scene = Scene(perco=p, render=False)
+            scene = Scene(p, nbfires, size, render=False)
             done = False
             while done == False:
                 #clock.tick(30)
@@ -121,9 +123,9 @@ def fast_simulation(epochs=1):
             #pygame.quit()
     plot_result(results)
 
-def sim_with_grid():
+def sim_with_grid(size=25, nb_fires=1, perco=0.5):
     clock = pygame.time.Clock()
-    scene = Scene(perco=p)
+    scene = Scene(p, nb_fires, size)
     done = False
     while done == False:
         clock.tick(30)
@@ -131,3 +133,7 @@ def sim_with_grid():
         done = scene.update()
         pygame.display.flip()
     pygame.quit()
+
+#merge both functions into one
+def simulate(epochs=1, nb_fires=1, size=25, p_start=0, pmax=1, delta=0.05):
+    pass
