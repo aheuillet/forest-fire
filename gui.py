@@ -26,9 +26,10 @@ else:
 
 result_layout = [
     [sg.Text('Results', justification='center', font='Helvetica 20', auto_size_text=True)],
-    [sg.Text('Number of generations: '), sg.Text(str(population.current_gen+1))],
-    [sg.Text('Strongest child: ', text_color='green'), sg.Text(str(strong))],
-    [sg.Text('Weakest child: ', text_color='red'), sg.Text(str(weak))],
+    [sg.Text('Mean tree density left: '), sg.Text(str(population.current_gen+1))],
+    [sg.Text('Mean time to propagate from left to right: '), sg.Text(str(strong))],
+    [sg.Text('Mean number of steps to complete: '), sg.Text(str(weak))],
+    [sg.Text('Detected percolation threshold: '),  sg.Text()]
     [sg.CloseButton(button_text='Close')]
 ]
 

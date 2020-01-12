@@ -1,4 +1,4 @@
-import sys, math, random
+import sys, math, time
 import pygame
 import pygame.draw
 import numpy as np
@@ -23,6 +23,7 @@ class Forest:
         print(f"Creating a grid of dimensions ({size},{size})")
         self.grid = np.zeros((size, size))
         self.size = size
+        self.propagated = False
         self.p = p
         for i in range(fire_number):
             a = np.random.randint(0, self.size-1)
@@ -48,6 +49,8 @@ class Forest:
                     self.grid[i, j] = 2
         for a,b in to_update:
             self.grid[a, b] = 1
+            if a == self.size-1:
+                self.propagated = True
         return (len(to_update) == 0)
         
 
@@ -95,10 +98,14 @@ class Scene:
     def update(self):
         return self._grid.step()
 
+def compute_perco_threshold(perco_coeffs, tree_left):
+
+
 def plot_result(results):
     plt.plot(results["perco_coeff"], results["tree_left"])
     plt.xlabel("Densité")
     plt.ylabel("Coefficient de percolation")
+    results["perco_threshold"] = compute_perco_threshold()
     plt.show()
 
 def fast_simulation(epochs=1, nb_fires=1, size=25):
@@ -135,5 +142,34 @@ def sim_with_grid(size=25, nb_fires=1, perco=0.5):
     pygame.quit()
 
 #merge both functions into one
-def simulate(epochs=1, nb_fires=1, size=25, p_start=0, pmax=1, delta=0.05):
-    pass
+def simulate(epochs=1, nb_fires=1, size=25, p_start=0, pmax=1, delta=0.05, graphical_rendering=True):
+    results = {"perco_coeff": [], "tree_left": [], "time_to_complete": [], "steps": [], "perco_threshold": []}
+    clock = pygame.time.Clock()
+    for e in range(epochs):
+        results["perco_coeff"] = []
+        results["tree_left"].append([])
+        p = p_start
+        while p < pmax:
+            scene = Scene(p, nbfires, size, render=graphical_rendering)
+            done = False
+            reached_propagation = False
+            t1 = time.time()
+            s = 0
+            while done == False:
+                if graphical_rendering:
+                    clock.tick(30)
+                    scene.drawMe()
+                    pygame.display.flip()
+                done = scene.update()
+                if scene._grid.propagated and !reached_propagation:
+                    results["perco_threshold"].append(time.time() - t1)
+                    reached_propagation = True
+                s += 1
+            results["time_to_complete"].append(time.time() - t1)
+            results["steps"].append(s)
+            results["perco_coeff"].append(p)
+            results["tree_left"][e].append(scene._grid.get_trees_left()/(scene._grid.size**2))
+            p += delta
+            if graphical_rendering:
+                pygame.quit()
+    return plot_result(results)
