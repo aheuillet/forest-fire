@@ -130,13 +130,14 @@ def analyze_results(results):
     return results
 
 
-def simulate(epochs=1, nb_fires=1, size=25, p_start=0, p_max=1, delta=0.05, graphical_rendering=True):
+def simulate(epochs=1, nb_fires=1, size=25, p_start=0, p_max=1, delta=0.05, gui=None, graphical_rendering=True):
     results = {"perco_coeff": [], "tree_left": [],
                "steps": [], "mean_tree_left": 0}
     clock = pygame.time.Clock()
     results["perco_coeff"] = []
     i = 0
     p = p_start
+    max_iterations = epochs*((p_max - p_start)/delta)
     while p < p_max:
         results["tree_left"].append([])
         results["steps"].append([])
@@ -156,6 +157,9 @@ def simulate(epochs=1, nb_fires=1, size=25, p_start=0, p_max=1, delta=0.05, grap
             results["steps"][i].append(s)
             results["tree_left"][i].append(
                 scene._grid.get_trees_left()/(scene._grid.size**2))
+            if gui is not None:
+               if gui.OneLineProgressMeter('Simulation', i*epochs + e, max_iterations, 'key','Simulation in progress...') == False:
+                   break
         results["perco_coeff"].append(p)
         results["tree_left"][i] = np.mean(results["tree_left"][i])
         results["steps"][i] = np.mean(results["steps"][i])
