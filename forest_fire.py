@@ -22,39 +22,36 @@ def getColorCell(n):
         return __burntcolor__
 
 
+def getCellNeighbors(c):
+    (i, j) = c
+    return [(i-1, j), (i+1, j), (i, j-1), (i, j+1), (i+1, j+1),
+            (i-1, j-1), (i-1, j+1), (i+1, j-1)]
+
+
 class Forest:
     def __init__(self, fire_number, size, p=0.5):
-        print(f"Creating a grid of dimensions ({size},{size})")
         self.grid = np.zeros((size, size))
         self.size = size
         self.propagated = False
+        self.burning_trees = []
         self.p = p
-        for i in range(fire_number):
-            a = np.random.randint(0, self.size-1)
-            b = np.random.randint(0, self.size-1)
-            self.grid[a, b] = 1
+        self.grid[int(self.size/2), int(self.size/2)] = 1
+        self.burning_trees.append((int(self.size/2), int(self.size/2)))
 
     def step(self):
         to_update = []
-        for i in range(self.size):
-            for j in range(self.size):
-                neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1), (i+1, j+1),
-                             (i-1, j-1), (i-1, j+1), (i+1, j-1)]
-                if self.grid[i, j] == 0:
-                    prob = np.random.randint(0, 10)
-                    if (prob <= self.p * 10):
-                        for vi, vj in neighbors:
-                            if self.is_valid(vi, vj) and self.grid[vi, vj] == 1:
-                                to_update.append((i, j))
-                                break
-        for i in range(self.size):
-            for j in range(self.size):
-                if self.grid[i, j] == 1:
-                    self.grid[i, j] = 2
-        for a, b in to_update:
-            self.grid[a, b] = 1
-            if a == self.size-1:
-                self.propagated = True
+        for b in self.burning_trees:
+            neighbors = getCellNeighbors(b)
+            (xb, yb) = b
+            self.grid[xb, yb] = 2
+            for n in neighbors:
+                prob = np.random.randint(0, 10)
+                if (prob <= self.p * 10):
+                    (xn, yn) = n
+                    if self.is_valid(xn, yn) and self.grid[xn, yn] == 0:
+                        self.grid[xn, yn] = 1
+                        to_update.append(n)
+        self.burning_trees = to_update
         return (len(to_update) == 0)
 
     def is_valid(self, vi, vj):
@@ -70,9 +67,6 @@ class Forest:
                 if self.grid[i, j] == 0:
                     nb_tree += 1
         return nb_tree
-
-    def get_stats(self):
-        pass
 
 
 class Scene:
@@ -115,11 +109,11 @@ def compute_perco_threshold(perco_coeffs, perco_threshold_vals):
 
 
 def plot_result(results):
-    plt.ion()
     plt.plot(results["perco_coeff"], results["tree_left"])
     plt.xlabel("Densité")
-    plt.ylabel("Coefficient de percolation")
-    plt.show()
+    plt.ylabel("Probabilité qu'un arbre brûle")
+    plt.show(block=False)
+    plt.pause(0.05)
 
 
 def analyze_results(results):
@@ -149,7 +143,7 @@ def simulate(epochs=1, nb_fires=1, size=25, p_start=0, p_max=1, delta=0.05, gui=
             s = 0
             while done == False:
                 if graphical_rendering:
-                    clock.tick(30)
+                    clock.tick(10)
                     scene.drawMe()
                     pygame.display.flip()
                 done = scene.update()
@@ -158,8 +152,8 @@ def simulate(epochs=1, nb_fires=1, size=25, p_start=0, p_max=1, delta=0.05, gui=
             results["tree_left"][i].append(
                 scene._grid.get_trees_left()/(scene._grid.size**2))
             if gui is not None:
-               if gui.OneLineProgressMeter('Simulation', i*epochs + e, max_iterations, 'key','Simulation in progress...') == False:
-                   break
+                if gui.OneLineProgressMeter('Simulation', i*epochs + e, max_iterations, 'key', 'Simulation in progress...') == False:
+                    break
         results["perco_coeff"].append(p)
         results["tree_left"][i] = np.mean(results["tree_left"][i])
         results["steps"][i] = np.mean(results["steps"][i])

@@ -25,13 +25,13 @@ On se retrouve alors devant une fenêtre offrant plusieurs paramètres à choisi
 
 - La taille de la grille utilisée dans la simulation (par défaut 25)
 - Le nombre de départs de feu répartis sur la carte (par défaut 1)
-- Le coefficient de percolation à utiliser (uniquement pour le mode *PyGame*, par défaut 0.5)
+- La probabilité qu'un arbre prenne feu (uniquement pour le mode *PyGame*, par défaut 0.5)
 - Le nombre d'*epochs* (uniquement pour le mode *fast*, par défaut 1)
 - Le pas utilisé pour incrémenter le coefficient de percolation (uniquement pour le mode *fast*, par défaut 0.1)
 
 ![Image menu 1](./images/menu1.png "Premier menu")
 
-Une fois la simution terminée, une courbe représentant la densité d'arbres restants en fonction du coefficient de percolation s'affiche.
+Une fois la simulation terminée, une courbe représentant la densité d'arbres restants en fonction du coefficient de percolation s'affiche.
 Une fenêtre présentant diverses statistiques s'affiche également:
 
 - La densité moyenne d'arbres restants sur l'ensemble des simulation
