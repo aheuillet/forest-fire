@@ -4,9 +4,10 @@ import time
 import pygame
 import pygame.draw
 import numpy as np
+from random import random
 import matplotlib.pyplot as plt
 
-__cellSize__ = 40
+__cellSize__ = 7
 
 __firecolor__ = (255, 0, 0)
 __treecolor__ = (0, 255, 0)
@@ -29,7 +30,7 @@ def getCellNeighbors(c):
 
 
 class Forest:
-    def __init__(self, fire_number, size, p=0.5):
+    def __init__(self, size, p=0.5):
         self.grid = np.zeros((size, size))
         self.size = size
         self.propagated = False
@@ -45,8 +46,8 @@ class Forest:
             (xb, yb) = b
             self.grid[xb, yb] = 2
             for n in neighbors:
-                prob = np.random.randint(0, 10)
-                if (prob <= self.p * 10):
+                r = random()
+                if (r < self.p):
                     (xn, yn) = n
                     if self.is_valid(xn, yn) and self.grid[xn, yn] == 0:
                         self.grid[xn, yn] = 1
@@ -73,10 +74,10 @@ class Scene:
     _grid = None
     _font = None
 
-    def __init__(self, perco, nb_fires, size, render=True):
-        self._grid = Forest(nb_fires, size, perco)
-        self._screen_size = (int(self._grid.size*61.5),
-                             int(self._grid.size*60.9))
+    def __init__(self, perco, size, render=True):
+        self._grid = Forest(size, perco)
+        self._screen_size = (int(self._grid.size*7),
+                             int(self._grid.size*7))
         if render:
             pygame.init()
             self._screen = pygame.display.set_mode(self._screen_size)
@@ -124,7 +125,7 @@ def analyze_results(results):
     return results
 
 
-def simulate(epochs=1, nb_fires=1, size=25, p_start=0, p_max=1, delta=0.05, gui=None, graphical_rendering=True):
+def simulate(epochs=1, size=25, p_start=0, p_max=1, delta=0.05, gui=None, graphical_rendering=True):
     results = {"perco_coeff": [], "tree_left": [],
                "steps": [], "mean_tree_left": 0}
     clock = pygame.time.Clock()
@@ -136,10 +137,8 @@ def simulate(epochs=1, nb_fires=1, size=25, p_start=0, p_max=1, delta=0.05, gui=
         results["tree_left"].append([])
         results["steps"].append([])
         for e in range(epochs):
-            scene = Scene(p, nb_fires, size, render=graphical_rendering)
+            scene = Scene(p, size, render=graphical_rendering)
             done = False
-            reached_propagation = False
-            t1 = time.time()
             s = 0
             while done == False:
                 if graphical_rendering:
